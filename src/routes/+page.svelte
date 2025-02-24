@@ -1,18 +1,16 @@
 <script lang="ts">
     import { convertFileSrc } from "@tauri-apps/api/core";
 
-    const convertInput = (path: string): string =>  {
-        if (!path) return ""
-
-        const _path = path.replace(/"/g, "")
-        console.log(_path);
-        if (!_path) return ""
-
-        return convertFileSrc(_path)
-    }
-
     let path = $state("")
-    let src = $derived(convertInput(path))
+    let safePath = $derived((() => {
+        if (!path) return ""
+        return path.replace(/"/g, "")
+    })())
+
+    let src = $derived((() => {
+        if (!safePath) return ""
+        return convertFileSrc(safePath)
+    })())
 </script>
 
 <div>

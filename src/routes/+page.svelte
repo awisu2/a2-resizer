@@ -2,15 +2,21 @@
     import { convertFileSrc } from "@tauri-apps/api/core";
 
     let path = $state("")
-    let safePath = $derived((() => {
-        if (!path) return ""
-        return path.replace(/"/g, "")
-    })())
+    let src = $state("")
 
-    let src = $derived((() => {
-        if (!safePath) return ""
-        return convertFileSrc(safePath)
-    })())
+    // 最初はで$deriveで直接更新していたが、
+    // pathの更新時に、pathを再帰的に更新したかったため、$effectで対応するように変更
+    $effect(() => {
+        src = ""
+        if (!path) return
+
+        const _path = path.replace(/"/g, "")
+        if (!path || path != _path) {
+            path = _path
+        }
+
+        src = convertFileSrc(path)
+    }) 
 </script>
 
 <div>
@@ -21,9 +27,11 @@
     convertedSrc: {src}
 </div>
 
-<div>
-    <img {src} class="image" alt="base image" />
-</div>
+{#if src}
+    <div>
+        <img {src} class="image" alt="base image" />
+    </div>
+{/if}
 
 <style>
     .image {
